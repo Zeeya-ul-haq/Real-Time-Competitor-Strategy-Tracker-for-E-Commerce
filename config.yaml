@@ -1,0 +1,390 @@
+# E-Commerce Competitor Analysis Configuration
+# Professional grade configuration with no redundancy
+
+# ============================================================================
+# GLOBAL SETTINGS
+# ============================================================================
+project:
+  name: "E-Commerce Competitor Analysis"
+  version: "2.0.0"
+
+# Directory structure - all paths configurable
+paths:
+  # Base directories
+  base_dir: "."
+  raw_data_dir: "scraped_data"
+  processed_data_dir: "processed_data"  
+  output_dir: "output"
+  logs_dir: "logs"
+  models_dir: "models"
+  plots_dir: "visualizations"
+  temp_dir: "temp"
+
+  # Data files
+  raw_mobile_file: "mobile_products.csv"
+  raw_reviews_file: "product_reviews.csv"
+  processed_mobile_file: "cleaned_mobile.csv"
+  processed_reviews_file: "cleaned_reviews.csv"
+
+  # Model files
+  model_results_file: "ml_model_performance.csv"
+  preprocessing_objects_file: "feature_preprocessing.pkl"
+
+  # Log files
+  main_log_file: "system.log"
+  scraper_log_file: "scraping.log"
+  ml_log_file: "machine_learning.log"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  console_output: true
+  file_output: true
+  max_file_size_mb: 10
+  backup_count: 5
+
+# Auto-create directories
+auto_create_dirs: true
+
+# ============================================================================
+# FLOW CONTROL
+# ============================================================================
+flows:
+  amazon_scraper:
+    enabled: true
+    name: "Amazon Product Scraper"
+    description: "Scrape mobile products and reviews from Amazon India"
+
+  flipkart_scraper:
+    enabled: true
+    name: "Flipkart Product Scraper"
+    description: "Scrape mobile products and reviews from Flipkart India"
+
+  data_processing:
+    enabled: true
+    name: "Data Cleaning & Processing"
+    description: "Clean, validate and process scraped data"
+
+  ml_training:
+    enabled: true
+    name: "ML Model Training"
+    description: "Train machine learning models for price prediction"
+
+  dashboard:
+    enabled: true
+    name: "Analytics Dashboard"
+    description: "Launch interactive Streamlit dashboard"
+
+  rag_system:
+    enabled: false
+    name: "RAG Q&A System"
+    description: "Intelligent question-answering system"
+
+# ============================================================================
+# WEB SCRAPING CONFIGURATION
+# ============================================================================
+scraping:
+  # Global scraping settings
+  default_wait_time: 3
+  max_retries: 3
+  request_timeout: 30
+  concurrent_limit: 5
+
+  # Selenium configuration
+  selenium:
+    headless: true
+    disable_gpu: true
+    disable_dev_shm: true
+    no_sandbox: true
+    disable_logging: true
+    window_size: "1920,1080"
+    user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
+
+  # Amazon specific settings
+  amazon:
+    base_url: "https://www.amazon.in"
+    search_endpoint: "/s?k=mobiles&page={}"
+    max_listing_pages: 5
+    max_review_pages: 3
+    selectors:
+      product_container: "div[data-component-type='s-search-result']"
+      title_classes: ["a-size-medium", "a-size-base-plus a-color-base a-text-normal"]
+      price_class: "a-price-whole"
+      mrp_class: "a-text-price"
+      rating_class: "a-icon-alt"
+      link_class: "a-link-normal"
+      review_container: "div[data-hook='review']"
+      reviewer_name: "span.a-profile-name"
+      review_rating: "i[data-hook='review-star-rating']"
+      review_text: "span[data-hook='review-body']"
+      review_date: "span[data-hook='review-date']"
+
+  # Flipkart specific settings  
+  flipkart:
+    base_url: "https://www.flipkart.com"
+    search_endpoint: "/search?q=mobiles&page={}"
+    max_listing_pages: 3
+    max_review_pages: 2
+    wait_time: 2
+    output_file: "mobile_products.csv"
+    review_file: "product_reviews.csv"
+    selectors:
+      roduct_container: "div._75nlfW"       # Container for each product card
+    title_class: "div.KzDlHZ"              # Product title
+    price_class: "div.Nx9bqj._4b5DiR"      # Discounted price
+    mrp_class: "div.yRaY8j"                # MRP
+    discount_class: "div.UkUFwK"           # Discount text
+    rating_class: "div.XQDdHH"             # Rating stars
+    link_class: "a.CGtC98"                 # Product link
+    review_container: "div.cPHDOP"         # Reviews section
+    reviewer_name: "p._2NsDsF.AwS1CA"
+    review_rating: "div._3LWZlK"
+    review_text: "div.ZmyHeo"
+# ============================================================================
+# DATA PROCESSING CONFIGURATION
+# ============================================================================
+data_processing:
+  # Data validation rules
+  validation:
+    min_price: 1000
+    max_price: 200000
+    min_rating: 0.0
+    max_rating: 5.0
+    required_fields: ["productid", "mobilename", "sellingprice", "source"]
+
+  # Cleaning operations
+  cleaning:
+    remove_duplicates: true
+    handle_missing_values: true
+    standardize_text: true
+    remove_emojis: true
+    parse_dates: true
+    normalize_prices: true
+    normalize_ratings: true
+    outlier_removal:
+      enabled: true
+      method: "iqr"  # iqr, zscore, percentile
+      threshold: 1.5
+
+  # Text processing
+  text_processing:
+    lowercase: true
+    remove_special_chars: true
+    extract_brands: true
+    sentiment_analysis: true
+
+# ============================================================================
+# MACHINE LEARNING CONFIGURATION
+# ============================================================================
+machine_learning:
+  # Model training settings
+  training:
+    test_size: 0.2
+    validation_size: 0.2
+    random_state: 42
+    cross_validation_folds: 5
+    stratify_split: false
+
+  # Feature engineering
+  feature_engineering:
+    categorical_features: ["source", "brand"]
+    numerical_features: ["rating", "discountoffering", "mrp"]
+    text_features: ["mobilename"]
+    target_feature: "sellingprice"
+
+    # Text vectorization
+    text_vectorization:
+      method: "tfidf"  # tfidf, count, word2vec
+      max_features: 100
+      min_df: 2
+      max_df: 0.95
+      ngram_range: [1, 2]
+
+    # Feature scaling
+    scaling:
+      method: "standard"  # standard, minmax, robust
+      scale_target: false
+
+  # Model algorithms
+  algorithms:
+    linear_regression:
+      enabled: false
+      hyperparameters: {}
+
+    random_forest:
+      enabled: false
+      hyperparameters:
+        n_estimators: 100
+        max_depth: null
+        min_samples_split: 2
+        min_samples_leaf: 1
+        random_state: 42
+        n_jobs: -1
+
+    gradient_boosting:
+      enabled: false
+      hyperparameters:
+        n_estimators: 100
+        learning_rate: 0.1
+        max_depth: 6
+        random_state: 42
+
+    knn:
+      enabled: true
+      hyperparameters:
+        n_neighbors: 5
+        weights: "uniform"
+        algorithm: "auto"
+        metric: "minkowski"
+
+    xgboost:
+      enabled: false
+      hyperparameters:
+        n_estimators: 100
+        learning_rate: 0.1
+        max_depth: 6
+        random_state: 42
+        n_jobs: -1
+
+  # Model evaluation
+  evaluation:
+    metrics: ["r2", "rmse", "mae", "mape"]
+    cross_validation: false
+    feature_importance: false
+    learning_curves: false
+
+  # Model persistence
+  persistence:
+    save_models: true
+    save_predictions: true
+    save_feature_importance: true
+    model_versioning: true
+
+# ============================================================================
+# DASHBOARD CONFIGURATION  
+# ============================================================================
+dashboard:
+  # Server settings
+  server:
+    host: "localhost"
+    port: 8501
+
+  # UI configuration
+  ui:
+    title: "E-Commerce Competitor Intelligence Dashboard"
+    theme: "light"
+    page_icon: "📊"
+    layout: "wide"
+    sidebar_state: "expanded"
+
+  # Feature modules
+  features:
+    product_analysis: true
+    competitor_comparison: true
+    price_prediction: true
+    sentiment_analysis: true
+    strategic_insights: true
+    model_performance: true
+    data_export: true
+
+  # Caching settings
+  caching:
+    data_cache_ttl: 3600  # 1 hour
+    model_cache_ttl: 7200  # 2 hours
+
+  # Visualization settings
+  visualization:
+    default_color_scheme: "plotly"
+    chart_height: 400
+    chart_width: 800
+
+  # Data file paths 
+  data_files:
+    products: "My_docs/mobile_products.csv"
+    reviews: "My_docs/product_reviews.csv"
+
+
+# ============================================================================
+# RAG SYSTEM CONFIGURATION
+# ============================================================================
+rag_system:
+  # Vector database
+  vector_db:
+    provider: "faiss"
+    index_type: "flat"
+    dimension: 384
+    rebuild_on_startup: false
+
+  # Text chunking
+  chunking:
+    chunk_size: 500
+    chunk_overlap: 50
+    separator: "\n\n"
+
+  # Embeddings
+  embeddings:
+    model: "sentence-transformers/all-MiniLM-L6-v2"
+    device: "cpu"
+    batch_size: 32
+
+  # Language model
+  llm:
+    provider: "groq"
+    model: "llama-3.3-70b-versatile"
+    temperature: 0.2
+    max_tokens: 1000
+
+  # Retrieval settings
+  retrieval:
+    top_k: 5
+    similarity_threshold: 0.7
+    reranking: false
+
+# ============================================================================
+# NOTIFICATION SYSTEM
+# ============================================================================
+notifications:
+  email:
+    enabled: false
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+
+  slack:
+    enabled: false
+
+  discord:
+    enabled: false
+
+# ============================================================================
+# PERFORMANCE OPTIMIZATION
+# ============================================================================
+performance:
+  # Memory management
+  memory:
+    chunk_size: 1000
+    low_memory_mode: true
+    garbage_collection: true
+
+  # Parallel processing
+  parallel:
+    enabled: true
+    max_workers: 4
+    use_multiprocessing: false
+
+  # Caching
+  cache:
+    enabled: true
+    backend: "memory"  # memory, redis, disk
+    default_ttl: 3600
+
+# ============================================================================
+# ERROR HANDLING
+# ============================================================================
+error_handling:
+  max_retries: 3
+  retry_delay: 1
+  exponential_backoff: true
+  continue_on_error: true
+  detailed_logging: true
